@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OWFCR &middot; Optimal Wind-Farm Cable Routing</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">🌬️</span>
+        <div>
+          <h1>OWFCR Cable Optimizer</h1>
+          <p>
+            Optimal Wind-Farm Cable Routing &mdash; least-cost inter-array cable
+            layout on a real site
+          </p>
+        </div>
+      </div>
+      <div class="status-pill" id="statusPill">Ready</div>
+    </header>
+
+    <main class="layout">
+      <!-- LEFT: interactive map -->
+      <section class="panel canvas-panel">
+        <div class="panel-head">
+          <h2>Wind-farm layout</h2>
+          <div class="hint" id="canvasHint">
+            Click open water to add a turbine &middot; drag a marker to move it
+            &middot; click a marker then "Delete selected" to remove
+          </div>
+        </div>
+
+        <div class="canvas-wrap">
+          <div id="farm"></div>
+        </div>
+
+        <div class="canvas-toolbar">
+          <button id="btnRandom" class="btn">🎲 Random layout here</button>
+          <label class="inline"
+            >Turbines
+            <input
+              type="number"
+              id="randCount"
+              value="12"
+              min="2"
+              max="40"
+              class="mini"
+            />
+          </label>
+          <label class="inline"
+            >Radius (m)
+            <input
+              type="number"
+              id="randRadius"
+              value="4000"
+              min="200"
+              max="20000"
+              step="100"
+              class="mini"
+            />
+          </label>
+          <button id="btnClear" class="btn ghost">Clear</button>
+          <button id="btnDelete" class="btn ghost" disabled>
+            Delete selected
+          </button>
+          <span class="spacer"></span>
+          <span class="counter"><b id="turbCount">0</b> turbines</span>
+        </div>
+      </section>
+
+      <!-- RIGHT: requirements + results -->
+      <section class="panel side-panel">
+        <div class="side-scroll">
+          <h2>Requirements</h2>
+
+          <div class="field-row">
+            <label
+              >Turbine rating (MW)
+              <input
+                type="number"
+                id="turbineMw"
+                value="8"
+                min="0.1"
+                step="0.5"
+              />
+            </label>
+            <label
+              >Max cables into substation
+              <input type="number" id="maxCables" value="4" min="1" max="20" />
+            </label>
+          </div>
+          <div class="field-row">
+            <label
+              >Solver time limit (s)
+              <input
+                type="number"
+                id="timeLimit"
+                value="30"
+                min="1"
+                max="300"
+              />
+            </label>
+            <label
+              >&nbsp;
+              <span class="sub" id="farmMwHint">– total farm output</span>
+            </label>
+          </div>
+
+          <h3>Cable catalogue</h3>
+          <p class="sub">
+            Each cable type is rated by voltage and continuous current, matching
+            real submarine inter-array cables. Capacity (MW) = &radic;3 &times;
+            V &times; I &times; pf. The optimizer picks the cheapest mix that
+            keeps every cable's loading &le; 100%.
+          </p>
+          <table class="cable-table" id="cableTable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Name</th>
+                <th>kV</th>
+                <th>Amps</th>
+                <th>pf</th>
+                <th>€/m</th>
+                <th>MW cap</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cableBody"></tbody>
+          </table>
+          <button id="btnAddCable" class="btn ghost small">
+            + Add cable type
+          </button>
+
+          <button id="btnSolve" class="btn solve">⚡ Optimize routing</button>
+          <div class="err" id="errBox"></div>
+
+          <div id="results" class="results hidden">
+            <h2>Result</h2>
+            <div class="kpis">
+              <div class="kpi">
+                <span class="kpi-label">Total cost</span
+                ><span class="kpi-val" id="kpiCost">–</span>
+              </div>
+              <div class="kpi">
+                <span class="kpi-label">Cables</span
+                ><span class="kpi-val" id="kpiCables">–</span>
+              </div>
+              <div class="kpi">
+                <span class="kpi-label">Solve time</span
+                ><span class="kpi-val" id="kpiTime">–</span>
+              </div>
+            </div>
+
+            <h3>By cable type</h3>
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Used</th>
+                  <th>Length</th>
+                  <th>MW</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody id="summaryBody"></tbody>
+            </table>
+
+            <h3>Cable list</h3>
+            <div class="arc-list-wrap">
+              <table class="arc-table">
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Cable</th>
+                    <th>m</th>
+                    <th>MW</th>
+                    <th>Load%</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody id="arcBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.DEFAULT_CABLES = {{ default_cables | tojson }};
+      window.DEFAULT_CENTER = {{ default_center | tojson }};
+    </script>
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  </body>
+</html>
