@@ -1,0 +1,157 @@
+/* CSS decides how things LOOK. The browser downloads this file because
+   index.html has a <link rel="stylesheet"> pointing at it. */
+
+/* Custom properties ("variables") — change one value, the whole page follows. */
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --danger: #f87171;
+  --radius: 10px;
+}
+
+/* `*` selects every element. This makes padding easier to reason about. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1rem;
+  font-family: system-ui, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header, main, footer {
+  max-width: 640px;
+  margin-inline: auto;   /* centers the column */
+}
+
+h1 {
+  margin-bottom: 0.25rem;
+  color: var(--accent);
+}
+
+.subtitle, .hint, footer {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* A class selector — matches every element with class="card". */
+.card {
+  background: var(--card);
+  border: 1px solid #334155;
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+  color: var(--accent);
+}
+
+/* Flexbox: lay children out in a row with a gap between them. */
+.row, form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+input {
+  flex: 1;                /* grow to fill the leftover space */
+  min-width: 140px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #475569;
+  border-radius: var(--radius);
+  background: #0b1220;
+  color: var(--text);
+  font: inherit;
+}
+
+input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  padding: 0.55rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #0b1220;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* A pseudo-class: only applies while the mouse is over the button. */
+button:hover {
+  filter: brightness(1.1);
+}
+
+.output {
+  font-family: ui-monospace, Consolas, monospace;
+  background: #0b1220;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius);
+}
+
+.error {
+  color: var(--danger);
+  min-height: 1.2em;      /* reserve space so the layout doesn't jump */
+  margin: 0.5rem 0 0;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #334155;
+}
+
+li:last-child {
+  border-bottom: none;
+}
+
+li .title {
+  flex: 1;
+  cursor: pointer;
+}
+
+/* JavaScript adds class="done" to finished tasks; the styling lives here. */
+li.done .title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.delete-btn {
+  background: transparent;
+  color: var(--danger);
+  padding: 0.2rem 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+a {
+  color: var(--accent);
+}
+
+code {
+  background: #0b1220;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}

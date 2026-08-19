@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- {{ page_title }} is a Jinja placeholder. Flask replaced it with the
+       value we passed from app.py BEFORE sending this file to the browser. -->
+  <title>{{ page_title }}</title>
+
+  <!-- url_for('static', ...) builds the correct URL to files in static/.
+       It writes out /static/css/style.css for us. -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <header>
+    <h1>{{ page_title }}</h1>
+    <p class="subtitle">Python answers the requests. HTML draws it. CSS styles it. JS talks to Python.</p>
+  </header>
+
+  <main>
+
+    <!-- ================= 1. Server-rendered data ================= -->
+    <section class="card">
+      <h2>1. The server filled this in</h2>
+      <p>
+        When you loaded this page, Python counted the tasks and pasted the number
+        into the HTML: there {{ 'is' if task_count == 1 else 'are' }}
+        <strong>{{ task_count }}</strong> task{{ '' if task_count == 1 else 's' }}.
+      </p>
+      <p class="hint">View page source — you will see the number, not the <code>{{ '{{ ... }}' }}</code>.</p>
+    </section>
+
+    <!-- ================= 2. Old-school form ================= -->
+    <section class="card">
+      <h2>2. A plain HTML form (page reloads)</h2>
+      <!-- action = which route to send to, method = which HTTP verb.
+           The `name` attribute is the key Python reads with request.form. -->
+      <form action="/greet" method="POST">
+        <input type="text" name="name" placeholder="Your name" required>
+        <button type="submit">Say hello</button>
+      </form>
+      <p class="hint">This navigates away to <code>/greet</code>. Notice the flash/reload.</p>
+    </section>
+
+    <!-- ================= 3. fetch() with a query string ================= -->
+    <section class="card">
+      <h2>3. JavaScript asking a question (no reload)</h2>
+      <div class="row">
+        <input type="number" id="square-input" placeholder="A number" value="7">
+        <button id="square-btn">Square it</button>
+      </div>
+      <p id="square-output" class="output">Result will appear here.</p>
+      <p class="hint">JS calls <code>GET /api/square?n=7</code> and only updates this line.</p>
+    </section>
+
+    <!-- ================= 4. Full CRUD over JSON ================= -->
+    <section class="card">
+      <h2>4. Talking to a JSON API</h2>
+      <div class="row">
+        <input type="text" id="task-input" placeholder="New task…">
+        <button id="task-add-btn">Add</button>
+      </div>
+
+      <!-- This list starts empty. JavaScript fills it in after asking
+           the server for the data. -->
+      <ul id="task-list"></ul>
+      <p id="task-error" class="error"></p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Open DevTools → Network tab to watch every request go out.</p>
+  </footer>
+
+  <!-- `defer` = download now, run after the HTML is parsed, so the script can
+       safely find the elements above. -->
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+</body>
+</html>

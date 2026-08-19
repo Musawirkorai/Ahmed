@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello, {{ name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main>
+    <section class="card">
+      <h1>Hello, {{ name }}! 👋</h1>
+      <p>
+        This is a <em>different page</em>, built by Python. The browser sent your
+        name to <code>/greet</code>, Flask put it into this template, and sent
+        the finished HTML back.
+      </p>
+      <p><a href="/">← Back to the demo</a></p>
+    </section>
+  </main>
+</body>
+</html>
